@@ -19,7 +19,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: '1.23' # Specify Go version to install
+          go-version: '1.23.2' # Specify Go version to install
 
       # Clone the Gitleaks repository
       - name: Clone Gitleaks repository
