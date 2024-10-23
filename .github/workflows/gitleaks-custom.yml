@@ -7,56 +7,60 @@ on:
       - main
 
 jobs:
-  gitleaks-scan:
-    runs-on: ubuntu-latest
+  workflow-gitleaks:
+    uses: mapedraza/workflows/gitleaks/gitleaks.yml@main
 
-    steps:
-      # Checkout the repository
-      - name: Checkout code
-        uses: actions/checkout@v4
+# jobs:
+#   gitleaks-scan:
+#     runs-on: ubuntu-latest
 
-      # Install Go
-      - name: Set up Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: '1.23.2' # Specify Go version to install
+#     steps:
+#       # Checkout the repository
+#       - name: Checkout code
+#         uses: actions/checkout@v4
 
-      # Clone the Gitleaks repository
-      - name: Clone Gitleaks repository
-        run: |
-          git clone -b v8.21.1 --single-branch https://github.com/gitleaks/gitleaks.git
-          cd gitleaks
-          make build
+#       # Install Go
+#       - name: Set up Go
+#         uses: actions/setup-go@v4
+#         with:
+#           go-version: '1.23.2' # Specify Go version to install
 
-      # Run Gitleaks scan on the repository
-      - name: Run Gitleaks
-        run: |
-          ./gitleaks/gitleaks detect --source . --redact -v --report-format=sarif --report-path=results.sarif --log-level=debug --log-opts=--no-merges
-      # Upload the scan report as an artifact (optional)
-      - name: Upload Gitleaks report
-        uses: actions/upload-artifact@v4
-        with:
-          name: gitleaks-report
-          path: results.sarif
+#       # Clone the Gitleaks repository
+#       - name: Clone Gitleaks repository
+#         run: |
+#           git clone -b v8.21.1 --single-branch https://github.com/gitleaks/gitleaks.git
+#           cd gitleaks
+#           make build
 
-      # Fail the build if Gitleaks detects any secrets
-      # - name: Check for leaks
-      #   run: |
-      #     if grep -q "leaks detected" results.sarif; then
-      #       echo "Secrets detected!"
-      #       exit 1
-      #     else
-      #       echo "No secrets detected."
-      #     fi
-      - name: Check for leaks
-        run: |
-          # Check if there are any "results" in the SARIF JSON file
-          leaks=$(jq '.runs[0].results | length' results.sarif)
+#       # Run Gitleaks scan on the repository
+#       - name: Run Gitleaks
+#         run: |
+#           ./gitleaks/gitleaks detect --source . --redact -v --report-format=sarif --report-path=results.sarif --log-level=debug --log-opts=--no-merges
+#       # Upload the scan report as an artifact (optional)
+#       - name: Upload Gitleaks report
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: gitleaks-report
+#           path: results.sarif
 
-          if [ "$leaks" -gt 0 ]; then
-            echo "Secrets detected in the report!"
-            jq '.runs[0].results[] | {message: .message.text, file: .locations[0].physicalLocation.artifactLocation.uri, line: .locations[0].physicalLocation.region.startLine}' results.sarif
-            exit 1
-          else
-            echo "No secrets detected."
-          fi
+#       # Fail the build if Gitleaks detects any secrets
+#       # - name: Check for leaks
+#       #   run: |
+#       #     if grep -q "leaks detected" results.sarif; then
+#       #       echo "Secrets detected!"
+#       #       exit 1
+#       #     else
+#       #       echo "No secrets detected."
+#       #     fi
+#       - name: Check for leaks
+#         run: |
+#           # Check if there are any "results" in the SARIF JSON file
+#           leaks=$(jq '.runs[0].results | length' results.sarif)
+
+#           if [ "$leaks" -gt 0 ]; then
+#             echo "Secrets detected in the report!"
+#             jq '.runs[0].results[] | {message: .message.text, file: .locations[0].physicalLocation.artifactLocation.uri, line: .locations[0].physicalLocation.region.startLine}' results.sarif
+#             exit 1
+#           else
+#             echo "No secrets detected."
+#           fi
