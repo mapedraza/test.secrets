@@ -8,7 +8,7 @@ on:
 
 jobs:
   workflow-gitleaks:
-    uses: mapedraza/workflows/gitleaks/gitleaks.yml@main
+    uses: mapedraza/workflows/.github/workflows/gitleaks.yml@main
 
 # jobs:
 #   gitleaks-scan:
