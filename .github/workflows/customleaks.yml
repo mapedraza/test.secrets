@@ -24,15 +24,14 @@ jobs:
       # Clone the Gitleaks repository
       - name: Clone Gitleaks repository
         run: |
-          git clone https://github.com/gitleaks/gitleaks.git
+          git clone -b v8.21.1 --single-branch https://github.com/gitleaks/gitleaks.git
           cd gitleaks
           make build
 
       # Run Gitleaks scan on the repository
       - name: Run Gitleaks
         run: |
-          ./gitleaks/gitleaks detect --source . --report-path gitleaks-report.json
-
+          ./gitleaks/gitleaks detect --source . --report-path gitleaks-report.json --redact -v --exit-code=2 --report-format=sarif --report-path=results.sarif --log-level=debug --log-opts=--no-merges
       # Upload the scan report as an artifact (optional)
       - name: Upload Gitleaks report
         uses: actions/upload-artifact@v3
@@ -41,10 +40,22 @@ jobs:
           path: gitleaks-report.json
 
       # Fail the build if Gitleaks detects any secrets
+      # - name: Check for leaks
+      #   run: |
+      #     if grep -q "leaks detected" gitleaks-report.json; then
+      #       echo "Secrets detected!"
+      #       exit 1
+      #     else
+      #       echo "No secrets detected."
+      #     fi
       - name: Check for leaks
         run: |
-          if grep -q "leaks detected" gitleaks-report.json; then
-            echo "Secrets detected!"
+          # Check if there are any "results" in the SARIF JSON file
+          leaks=$(jq '.runs[0].results | length' gitleaks-report.json)
+
+          if [ "$leaks" -gt 0 ]; then
+            echo "Secrets detected in the report!"
+            jq '.runs[0].results[] | {message: .message.text, file: .locations[0].physicalLocation.artifactLocation.uri, line: .locations[0].physicalLocation.region.startLine}' gitleaks-report.json
             exit 1
           else
             echo "No secrets detected."
