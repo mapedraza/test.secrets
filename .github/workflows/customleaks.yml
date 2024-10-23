@@ -31,18 +31,18 @@ jobs:
       # Run Gitleaks scan on the repository
       - name: Run Gitleaks
         run: |
-          ./gitleaks/gitleaks detect --source . --report-path gitleaks-report.json --redact -v --exit-code=2 --report-format=sarif --report-path=results.sarif --log-level=debug --log-opts=--no-merges
+          ./gitleaks/gitleaks detect --source . --redact -v --report-format=sarif --report-path=results.sarif --log-level=debug --log-opts=--no-merges
       # Upload the scan report as an artifact (optional)
       - name: Upload Gitleaks report
         uses: actions/upload-artifact@v3
         with:
           name: gitleaks-report
-          path: gitleaks-report.json
+          path: results.sarif
 
       # Fail the build if Gitleaks detects any secrets
       # - name: Check for leaks
       #   run: |
-      #     if grep -q "leaks detected" gitleaks-report.json; then
+      #     if grep -q "leaks detected" results.sarif; then
       #       echo "Secrets detected!"
       #       exit 1
       #     else
@@ -51,11 +51,11 @@ jobs:
       - name: Check for leaks
         run: |
           # Check if there are any "results" in the SARIF JSON file
-          leaks=$(jq '.runs[0].results | length' gitleaks-report.json)
+          leaks=$(jq '.runs[0].results | length' results.sarif)
 
           if [ "$leaks" -gt 0 ]; then
             echo "Secrets detected in the report!"
-            jq '.runs[0].results[] | {message: .message.text, file: .locations[0].physicalLocation.artifactLocation.uri, line: .locations[0].physicalLocation.region.startLine}' gitleaks-report.json
+            jq '.runs[0].results[] | {message: .message.text, file: .locations[0].physicalLocation.artifactLocation.uri, line: .locations[0].physicalLocation.region.startLine}' results.sarif
             exit 1
           else
             echo "No secrets detected."
