@@ -11,4 +11,4 @@ on:
 
 jobs:
   workflow-gitleaks:
-    uses: telefonicasc/common-workflows/.github/workflows/gitleaks.yml@master
+    uses: mapedraza/workflows/.github/workflows/gitleaks.yml@main
