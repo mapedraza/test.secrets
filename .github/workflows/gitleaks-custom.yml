@@ -1,10 +1,7 @@
-name: Gitleaks Secrets Scan
+name: Gitleaks Scan
 
-# Run the workflow on pull requests targeting the 'master' branch
+# Run the workflow on pull requests targeting the 'main' branch
 on:
-  push:
-    branches:
-      - main
   pull_request:
     branches:
       - main
@@ -12,3 +9,4 @@ on:
 jobs:
   workflow-gitleaks:
     uses: mapedraza/workflows/.github/workflows/gitleaks.yml@main
+    
