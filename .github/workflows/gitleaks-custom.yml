@@ -1,0 +1,12 @@
+name: Gitleaks Scan
+
+# Run the workflow on pull requests targeting the 'main' branch
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  workflow-gitleaks:
+    uses: mapedraza/workflows/.github/workflows/gitleaks.yml@main
+    
